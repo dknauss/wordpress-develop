@@ -889,6 +889,50 @@ HTML;
 	}
 
 	/**
+	 * Tests that concatenated style URLs retain the legacy compression query argument.
+	 *
+	 * @ticket 63017
+	 *
+	 * @covers ::_print_styles
+	 */
+	public function test_style_concatenation_retains_legacy_compression_query_arg() {
+		global $wp_styles, $compress_css, $wp_version;
+
+		$had_compress_css = array_key_exists( 'compress_css', $GLOBALS );
+		$old_compress_css = $had_compress_css ? $compress_css : null;
+
+		try {
+			$compress_css = true;
+
+			$wp_styles->do_concat    = true;
+			$wp_styles->default_dirs = array( '/wp-admin/' );
+
+			wp_enqueue_style( 'one', '/wp-admin/one.css' );
+			wp_enqueue_style( 'two', '/wp-admin/two.css' );
+
+			wp_print_styles();
+			$printed = get_echo( '_print_styles' );
+
+			$expected = <<<HTML
+<link
+	rel="stylesheet"
+	href="/wp-admin/load-styles.php?c=1&dir=ltr&load%5Bchunk_0%5D=one,two&ver={$wp_version}"
+	media="all"
+>
+
+HTML;
+
+			$this->assertEqualHTML( $expected, $printed );
+		} finally {
+			if ( $had_compress_css ) {
+				$compress_css = $old_compress_css;
+			} else {
+				unset( $GLOBALS['compress_css'] );
+			}
+		}
+	}
+
+	/**
 	 * Tests that WP_Styles emits a _doing_it_wrong() notice for missing dependencies.
 	 *
 	 * @ticket 64229

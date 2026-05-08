@@ -2,16 +2,24 @@
 /**
  * WordPress scripts and styles default loader.
  *
- * Several constants are used to manage the loading, concatenating and compression of scripts and CSS:
- * define('SCRIPT_DEBUG', true); loads the development (non-minified) versions of all scripts and CSS, and disables compression and concatenation,
- * define('CONCATENATE_SCRIPTS', false); disables compression and concatenation of scripts and CSS,
- * define('COMPRESS_SCRIPTS', false); disables compression of scripts,
- * define('COMPRESS_CSS', false); disables compression of CSS,
- * define('ENFORCE_GZIP', true); forces gzip for compression (default is deflate).
+ * Several constants are used to manage loading and concatenation for scripts
+ * and CSS, plus legacy compression URL flags:
+ * define('SCRIPT_DEBUG', true); loads the development (non-minified) versions of
+ * all scripts and CSS, and disables concatenation,
+ * define('CONCATENATE_SCRIPTS', false); disables concatenation of scripts and CSS,
+ * define('COMPRESS_SCRIPTS', false); sets the legacy script loader compression
+ * URL flag to false,
+ * define('COMPRESS_CSS', false); sets the legacy style loader compression URL
+ * flag to false,
+ * define('ENFORCE_GZIP', true); sets the legacy compression URL flag to gzip
+ * when compression is otherwise enabled.
  *
  * The globals $concatenate_scripts, $compress_scripts and $compress_css can be set by plugins
- * to temporarily override the above settings. Also a compression test is run once and the result is saved
- * as option 'can_compress_scripts' (0/1). The test will run again if that option is deleted.
+ * to temporarily override the above settings. The $compress_scripts and
+ * $compress_css globals only determine the `c` query argument on
+ * load-scripts.php and load-styles.php URLs.
+ * The loader endpoints do not perform PHP-based compression based on that
+ * argument.
  *
  * @package WordPress
  */
@@ -2217,11 +2225,13 @@ function print_footer_scripts() {
  * @ignore
  *
  * @global WP_Scripts $wp_scripts
- * @global bool       $compress_scripts
+ * @global bool       $compress_scripts Whether to set the legacy script loader
+ *                                      compression URL flag.
  */
 function _print_scripts() {
 	global $wp_scripts, $compress_scripts;
 
+	// Retain the legacy `c` query argument for compatibility with existing loader URLs.
 	$zip = $compress_scripts ? 1 : 0;
 	if ( $zip && defined( 'ENFORCE_GZIP' ) && ENFORCE_GZIP ) {
 		$zip = 'gzip';
@@ -2405,13 +2415,15 @@ function print_late_styles() {
  * @ignore
  * @since 3.3.0
  *
- * @global bool $compress_css
+ * @global bool $compress_css Whether to set the legacy style loader
+ *                            compression URL flag.
  */
 function _print_styles() {
 	global $compress_css;
 
 	$wp_styles = wp_styles();
 
+	// Retain the legacy `c` query argument for compatibility with existing loader URLs.
 	$zip = $compress_css ? 1 : 0;
 	if ( $zip && defined( 'ENFORCE_GZIP' ) && ENFORCE_GZIP ) {
 		$zip = 'gzip';
@@ -2450,13 +2462,16 @@ function _print_styles() {
 }
 
 /**
- * Determines the concatenation and compression settings for scripts and styles.
+ * Determines the concatenation settings and legacy compression URL flags for
+ * scripts and styles.
  *
  * @since 2.8.0
  *
  * @global bool $concatenate_scripts
- * @global bool $compress_scripts
- * @global bool $compress_css
+ * @global bool $compress_scripts Whether scripts should use the legacy
+ *                                compression URL flag.
+ * @global bool $compress_css     Whether styles should use the legacy
+ *                                compression URL flag.
  */
 function script_concat_settings() {
 	global $concatenate_scripts, $compress_scripts, $compress_css;

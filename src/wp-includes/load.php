@@ -824,6 +824,9 @@ function wp_using_ext_object_cache( $using = null ) {
  *
  * If an object-cache.php file exists in the wp-content directory,
  * it uses that drop-in as an external object cache.
+ * This is separate from the advanced-cache.php drop-in loaded
+ * earlier when WP_CACHE is enabled, though advanced-cache.php may
+ * load object-cache.php before this function runs.
  *
  * @since 3.0.0
  * @access private

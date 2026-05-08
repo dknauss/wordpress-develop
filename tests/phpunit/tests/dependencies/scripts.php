@@ -2064,6 +2064,44 @@ HTML;
 	}
 
 	/**
+	 * Tests that concatenated script URLs retain the legacy compression query argument.
+	 *
+	 * @ticket 63017
+	 *
+	 * @covers ::_print_scripts
+	 */
+	public function test_script_concatenation_retains_legacy_compression_query_arg() {
+		global $wp_scripts, $compress_scripts, $wp_version;
+
+		$had_compress_scripts = array_key_exists( 'compress_scripts', $GLOBALS );
+		$old_compress_scripts = $had_compress_scripts ? $compress_scripts : null;
+
+		try {
+			$compress_scripts = true;
+
+			$wp_scripts->do_concat    = true;
+			$wp_scripts->default_dirs = array( $this->default_scripts_dir );
+
+			wp_enqueue_script( 'one', $this->default_scripts_dir . 'one.js' );
+			wp_enqueue_script( 'two', $this->default_scripts_dir . 'two.js' );
+
+			wp_print_scripts();
+			$print_scripts = get_echo( '_print_scripts' );
+
+			$expected = "<script src='/wp-admin/load-scripts.php?c=1&amp;load%5Bchunk_0%5D=one,two"
+				. "&amp;ver={$wp_version}'></script>\n";
+
+			$this->assertSame( $expected, $print_scripts );
+		} finally {
+			if ( $had_compress_scripts ) {
+				$compress_scripts = $old_compress_scripts;
+			} else {
+				unset( $GLOBALS['compress_scripts'] );
+			}
+		}
+	}
+
+	/**
 	 * Testing `wp_script_add_data` with the data key.
 	 *
 	 * @ticket 16024

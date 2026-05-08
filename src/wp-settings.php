@@ -96,7 +96,8 @@ wp_debug_mode();
  *                                    Default true.
  */
 if ( WP_CACHE && apply_filters( 'enable_loading_advanced_cache_dropin', true ) && file_exists( WP_CONTENT_DIR . '/advanced-cache.php' ) ) {
-	// For an advanced caching plugin to use. Uses a static drop-in because you would only want one.
+	// Load the advanced cache drop-in early in bootstrap. This is separate from
+	// the object cache drop-in loaded later by wp_start_object_cache().
 	include WP_CONTENT_DIR . '/advanced-cache.php';
 
 	// Re-initialize any hooks added manually by advanced-cache.php.
@@ -147,7 +148,8 @@ if ( ! isset( $GLOBALS['table_prefix'] ) ) {
 // Set the database table prefix and the format specifiers for database table columns.
 wp_set_wpdb_vars();
 
-// Start the WordPress object cache, or an external object cache if the drop-in is present.
+// Start the WordPress object cache, loading the object-cache.php drop-in if
+// present. This is independent of WP_CACHE and advanced-cache.php.
 wp_start_object_cache();
 
 // Attach the default filters.
