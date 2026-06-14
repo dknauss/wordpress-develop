@@ -1,4 +1,6 @@
 # WordPress
+[![Latest Tag](https://img.shields.io/github/v/tag/dknauss/wordpress-develop)](https://github.com/dknauss/wordpress-develop/tags) [![Security Policy](https://img.shields.io/badge/security-policy-4c1)](SECURITY.md)
+
 
 Welcome to the WordPress development repository! Please check out the [contributor handbook](https://make.wordpress.org/core/handbook/) for information about how to open bug reports, contribute patches, test changes, write documentation, or get involved in any way you can.
 
